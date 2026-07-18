@@ -1,157 +1,191 @@
 #!/bin/bash
 
 # ==============================================================================
-# KDE SYSTEM THEME MONITORING SCRIPT (LIGHT/DARK)
+# KDE SYSTEM THEME MONITOR SCRIPT (LIGHT/DARK)
 # Features:
 # 1. Changes Konsole application profile (Background, Fonts, Cursor).
 # 2. Changes Fish shell syntax highlighting (Universal variables).
 # ==============================================================================
 
-# --- USER CONFIGURATION ---
-PROFIL_JASNY="Light"     # Konsole profile name for light mode
-PROFIL_CIEMNY="Dark"     # Konsole profile name for dark mode
+LIGHT_PROFILE="Light"
+DARK_PROFILE="Dark"
+CONFIG_FILE="$HOME/.config/kdeglobals"
 
-PLIK_CONFIG="$HOME/.config/kdeglobals"
+# Variable storing the last applied state to avoid redundancy
+LAST_STATE=""
 
-# --- HELPER FUNCTIONS ---
-
-loguj() {
+log_message() {
     echo "[$(date '+%H:%M:%S')] $1"
 }
 
-# --- FISH COLOR CONFIGURATION (SYNTAX HIGHLIGHTING) ---
-
-ustaw_fish_jasny() {
-    loguj "Fish: Applying LIGHT MODE colors (Alucard + Custom Pager)..."
-
-    # Manual color setup for light mode.
-    # Overwriting default colors to be readable on cream background.
-    # fish_pager_* -> selection menu colors (tab completion).
-    # fish_color_* -> syntax colors (commands, errors, params).
-
-    fish -c "set -U fish_pager_color_selected_background --background=644AC9; set -U fish_pager_color_selected_description CFCFDE; set -U fish_color_normal 1F1F1F; set -U fish_color_autosuggestion 6C664B; set -U fish_color_command 036A96; set -U fish_color_param 644AC9; set -U fish_color_quote 846E15; set -U fish_color_error CB3A2A; set -U fish_color_comment 644AC9; set -U fish_pager_color_description 6C664B; set -U fish_pager_color_prefix 036A96; set -U fish_pager_color_completion 1F1F1F; set -U fish_color_option A34D14; set -U fish_color_redirection 1F1F1F"
-}
-
-ustaw_fish_ciemny() {
-    loguj "Fish: Applying DARK MODE colors (Dracula Manual)..."
-
-    # Manual restoration of Dracula palette.
-    # Defining each variable separately to ensure all settings
-    # from light mode are overwritten (including pager backgrounds and text colors).
-
+# --- FISH FUNCTIONS ---
+set_fish_light() {
+    log_message "Fish: Applying LIGHT THEME colors..."
     fish -c "
-        set -U fish_color_normal f8f8f2;
-        set -U fish_color_command 8be9fd;
-        set -U fish_color_keyword ff79c6;
-        set -U fish_color_quote f1fa8c;
-        set -U fish_color_redirection f8f8f2;
-        set -U fish_color_end ffb86c;
-        set -U fish_color_error ff5555;
-        set -U fish_color_param bd93f9;
-        set -U fish_color_comment 6272a4;
-        set -U fish_color_selection --bold --background=44475a;
-        set -U fish_color_search_match --bold --background=44475a;
-        set -U fish_color_operator 50fa7b;
-        set -U fish_color_escape ff79c6;
-        set -U fish_color_cwd 50fa7b;
-        set -U fish_color_cwd_root red;
-        set -U fish_color_option ffb86c;
-        set -U fish_color_valid_path --underline=single;
-        set -U fish_color_autosuggestion 6272a4;
-        set -U fish_color_user 8be9fd;
-        set -U fish_color_host bd93f9;
-        set -U fish_color_host_remote bd93f9;
-        set -U fish_color_status ff5555;
-        set -U fish_color_cancel ff5555 --reverse;
-        set -U fish_pager_color_prefix 8be9fd;
-        set -U fish_pager_color_progress 6272a4;
-        set -U fish_pager_color_completion f8f8f2;
-        set -U fish_pager_color_description 6272a4;
-        set -U fish_pager_color_selected_background --background=44475a;
-        set -U fish_pager_color_selected_prefix 8be9fd;
-        set -U fish_pager_color_selected_completion f8f8f2;
-        set -U fish_pager_color_selected_description 6272a4;
-        # Resetting the variables below to empty (default) to remove light mode backgrounds
-        set -U fish_pager_color_background;
-        set -U fish_pager_color_secondary_prefix;
-        set -U fish_pager_color_secondary_description;
-        set -U fish_pager_color_secondary_completion;
-        set -U fish_pager_color_secondary_background;
+        set -U fish_color_autosuggestion 6C664B
+        set -U fish_color_cancel ffffff --background=000000
+        set -U fish_color_command 036A96
+        set -U fish_color_comment 6C664B
+        set -U fish_color_cwd 00cd00
+        set -U fish_color_cwd_root cd0000
+        set -U fish_color_end A34D14
+        set -U fish_color_error CB3A2A
+        set -U fish_color_escape A3144D
         set -U fish_color_history_current --bold
+        set -U fish_color_host 000000
+        set -U fish_color_host_remote a0a000
+        set -U fish_color_keyword A3144D
+        set -U fish_color_match --background=CFCFDE
+        set -U fish_color_normal 1F1F1F
+        set -U fish_color_operator A34D14
+        set -U fish_color_option FF9322
+        set -U fish_color_param 644AC9
+        set -U fish_color_quote FF79C6
+        set -U fish_color_redirection 1F1F1F
+        set -U fish_color_search_match --background=CFCFDE
+        set -U fish_color_selection --background=CFCFDE
+        set -U fish_color_status cd0000
+        set -U fish_color_user 00cd00
+        set -U fish_color_valid_path --underline=single
+        set -U fish_pager_color_background
+        set -U fish_pager_color_completion 1F1F1F
+        set -U fish_pager_color_description 6C664B
+        set -U fish_pager_color_prefix 036A96
+        set -U fish_pager_color_progress 6C664B
+        set -U fish_pager_color_secondary_background
+        set -U fish_pager_color_secondary_completion
+        set -U fish_pager_color_secondary_description
+        set -U fish_pager_color_secondary_prefix
+        set -U fish_pager_color_selected_background --background=CFCFDE
+        set -U fish_pager_color_selected_completion 060606 --bold
+        set -U fish_pager_color_selected_description 060606 --bold --italics
+        set -U fish_pager_color_selected_prefix 060606 --bold
     "
 }
 
-# --- MAIN CHANGE LOGIC ---
+set_fish_dark() {
+    log_message "Fish: Applying DARK THEME colors..."
+    fish -c "
+        set -U fish_color_autosuggestion 6272a4
+        set -U fish_color_cancel ff5555 --reverse
+        set -U fish_color_command 8be9fd
+        set -U fish_color_comment 6272a4
+        set -U fish_color_cwd 50fa7b
+        set -U fish_color_cwd_root red
+        set -U fish_color_end ffb86c
+        set -U fish_color_error ff5555
+        set -U fish_color_escape ff79c6
+        set -U fish_color_history_current --bold
+        set -U fish_color_host bd93f9
+        set -U fish_color_host_remote bd93f9
+        set -U fish_color_keyword ff79c6
+        set -U fish_color_match --background=BD93F9
+        set -U fish_color_normal f8f8f2
+        set -U fish_color_operator 50fa7b
+        set -U fish_color_option ffb86c
+        set -U fish_color_param bd93f9
+        set -U fish_color_quote f1fa8c
+        set -U fish_color_redirection f8f8f2
+        set -U fish_color_search_match --background=44475a --bold
+        set -U fish_color_selection --background=44475a --bold
+        set -U fish_color_status ff5555
+        set -U fish_color_user 8be9fd
+        set -U fish_color_valid_path --underline
+        set -U fish_pager_color_background FF79C6
+        set -U fish_pager_color_completion f8f8f2
+        set -U fish_pager_color_description 6272a4
+        set -U fish_pager_color_prefix 6272A4 --bold --underline=single
+        set -U fish_pager_color_progress 6272a4
+        set -U fish_pager_color_secondary_background
+        set -U fish_pager_color_secondary_completion f8f8f2
+        set -U fish_pager_color_secondary_description 6272a4
+        set -U fish_pager_color_secondary_prefix 8be9fd
+        set -U fish_pager_color_selected_background --background=44475a
+        set -U fish_pager_color_selected_completion f8f8f2
+        set -U fish_pager_color_selected_description 6272a4
+        set -U fish_pager_color_selected_prefix 6272A4
+    "
+}
 
-zmien_wszystko() {
-    TRYB=$1
+# --- MAIN LOGIC ---
+apply_theme() {
+    THEME_MODE=$1
 
-    if [ "$TRYB" == "dark" ]; then
-        NOWY_PROFIL="$PROFIL_CIEMNY"
-        ustaw_fish_ciemny
+    # Verify if the change is necessary
+    if [ "$THEME_MODE" == "$LAST_STATE" ]; then
+        return 0
+    fi
+    LAST_STATE="$THEME_MODE"
+
+    if [ "$THEME_MODE" == "dark" ]; then
+        NEW_PROFILE="$DARK_PROFILE"
+        set_fish_dark
     else
-        NOWY_PROFIL="$PROFIL_JASNY"
-        ustaw_fish_jasny
+        NEW_PROFILE="$LIGHT_PROFILE"
+        set_fish_light
     fi
 
-    loguj "Konsole: Changing profile to: $NOWY_PROFIL"
+    log_message "Konsole: Changing profile to: $NEW_PROFILE"
 
-    # 1. Changing default profile in config file (for new tabs/windows)
-    # Checking availability of KDE tools (Plasma 6 or 5)
-    if command -v kwriteconfig6 &> /dev/null; then
-        kwriteconfig6 --file konsolerc --group "Desktop Entry" --key DefaultProfile "$NOWY_PROFIL.profile"
+    if command -v kwriteconfig6 &>/dev/null; then
+        kwriteconfig6 --file konsolerc --group "Desktop Entry" --key DefaultProfile "$NEW_PROFILE.profile"
     else
-        sed -i "s/^DefaultProfile=.*/DefaultProfile=$NOWY_PROFIL.profile/" ~/.config/konsolerc
+        sed -i "s/^DefaultProfile=.*/DefaultProfile=$NEW_PROFILE.profile/" ~/.config/konsolerc
     fi
 
-    # 2. Applying profile in all current sessions (open windows)
-    uslugi_konsole=$(qdbus | grep org.kde.konsole)
-    for usluga in $uslugi_konsole; do
-        sesje=$(qdbus "$usluga" | grep -E '^/Sessions/')
-        for sesja in $sesje; do
-            # Calling D-Bus method to change profile on the fly
-            qdbus "$usluga" "$sesja" org.kde.konsole.Session.setProfile "$NOWY_PROFIL"
+    # Automatic detection of the appropriate qdbus command
+    QDBUS_CMD=""
+    if command -v qdbus6 &>/dev/null; then
+        QDBUS_CMD="qdbus6"
+    elif command -v qdbus-qt6 &>/dev/null; then
+        QDBUS_CMD="qdbus-qt6"
+    elif command -v qdbus &>/dev/null; then
+        QDBUS_CMD="qdbus"
+    fi
+
+    # Apply the profile in current Konsole sessions (if qdbus is available)
+    if [ -n "$QDBUS_CMD" ]; then
+        for service in $($QDBUS_CMD | grep org.kde.konsole); do
+            for session in $($QDBUS_CMD "$service" | grep -E '^/Sessions/'); do
+                $QDBUS_CMD "$service" "$session" org.kde.konsole.Session.setProfile "$NEW_PROFILE" &
+            done
         done
-    done
+    else
+        log_message "Warning: qdbus command not found. Open Konsole windows may not refresh immediately."
+    fi
 }
 
 # --- SYSTEM THEME DETECTION ---
-
-sprawdz_motyw_systemu() {
-    # Fetching current color scheme name from KDE settings
-    if command -v kreadconfig6 &> /dev/null; then
-        OBECNY_MOTYW=$(kreadconfig6 --file kdeglobals --group General --key ColorScheme)
+check_system_theme() {
+    if command -v kreadconfig6 &>/dev/null; then
+        CURRENT_THEME=$(kreadconfig6 --file kdeglobals --group General --key ColorScheme)
     else
-        OBECNY_MOTYW=$(kreadconfig5 --file kdeglobals --group General --key ColorScheme)
+        CURRENT_THEME=$(kreadconfig5 --file kdeglobals --group General --key ColorScheme)
     fi
 
-    # Removing whitespace
-    OBECNY_MOTYW=$(echo "$OBECNY_MOTYW" | xargs)
+    CURRENT_THEME=$(echo "$CURRENT_THEME" | xargs)
 
-    loguj "System: Detected theme '$OBECNY_MOTYW'"
-
-    # Decision based on theme name
-    case "$OBECNY_MOTYW" in
-        *Dark*|*dark*|*Dracula*|*Black*|*Night*)
-            zmien_wszystko "dark"
+    case "$CURRENT_THEME" in
+        *Dark* | *dark* | *Dracula* | *Black* | *Night*)
+            apply_theme "dark"
             ;;
         *)
-            zmien_wszystko "light"
+            apply_theme "light"
             ;;
     esac
 }
 
 # --- LISTENING LOOP (DAEMON) ---
+log_message "### STARTING MONITOR ###"
+check_system_theme # First run on script startup
 
-loguj "### MONITOR START ###"
-sprawdz_motyw_systemu # First run at script startup
-
+# We use a while true loop because KDE uses "atomic saves"
+# (it replaces the kdeglobals file, removing the old inode). 
+# The loop allows hooking into the newly created file every time.
 while true; do
-    # inotifywait waits for write event in kdeglobals file
-    # Using -e close_write, moved_to, create to handle various KDE write methods
-    inotifywait -q -e close_write -e moved_to -e create "$PLIK_CONFIG"
+    inotifywait -q -e close_write -e moved_to -e create "$CONFIG_FILE"
 
-    # Short delay to ensure file write is complete
+    # A short delay prevents read errors when the file is being replaced
     sleep 0.5
-    sprawdz_motyw_systemu
+    check_system_theme
 done
