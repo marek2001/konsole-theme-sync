@@ -183,7 +183,7 @@ check_system_theme # First run on script startup
 # (it replaces the kdeglobals file, removing the old inode). 
 # The loop allows hooking into the newly created file every time.
 while true; do
-    inotifywait -q -e close_write -e moved_to -e create "$CONFIG_FILE"
+    inotifywait -q "$CONFIG_FILE"
 
     # A short delay prevents read errors when the file is being replaced
     sleep 0.5
